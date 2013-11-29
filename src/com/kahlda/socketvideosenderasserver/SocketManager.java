@@ -49,6 +49,7 @@ public class SocketManager implements Runnable{
 					Log.d("SS", "Message received: " + mMessage);
 					if (mMessage.contentEquals(EXIT_STRING)) {
 						Log.d("SS", "EXIT_STRING received. Exiting...");
+						mMainActivity.writeToEchoText("EXIT_STRING received. Connection closing.");
 						break;
 					}
 
