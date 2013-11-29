@@ -1,43 +1,28 @@
 package com.kahlda.socketvideosenderasserver;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-
 import android.app.Activity;
 import android.hardware.Camera;
-import android.hardware.Camera.PreviewCallback;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements Runnable {
+public class MainActivity extends Activity {
 
-	private static final String EXIT_STRING = "!!EXIT";
-	private static final int PORT = 8080;
-	
-	private int mPreviewCount;
-
-	private ServerSocket mServer;
-	private Socket mSocket;
-	private BufferedReader mReader;
-	private BufferedWriter mWriter;
 	private TextView mEchoText;
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private FrameLayout mLayout;
+	
+	private String mString;
+	
+	private SocketManager mSockMan;
 
-	private String mMessage;
+	
 
 	volatile Thread runner;
 	Handler mHandler = new Handler();
@@ -46,8 +31,6 @@ public class MainActivity extends Activity implements Runnable {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		mPreviewCount = 0;
 
 		WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
 		WifiInfo wifIinfo = wifiManager.getConnectionInfo();
@@ -60,9 +43,11 @@ public class MainActivity extends Activity implements Runnable {
 
 		mEchoText = (TextView) findViewById(R.id.echoText);
 		mLayout = (FrameLayout) findViewById(R.id.camera_preview);
+		
+		mSockMan = new SocketManager(this);
 
 		if (runner == null) {
-			runner = new Thread(this);
+			runner = new Thread(mSockMan);
 			runner.start();
 		}
 		Toast.makeText(this, "Thread Start", Toast.LENGTH_SHORT).show();
@@ -83,13 +68,6 @@ public class MainActivity extends Activity implements Runnable {
 		mCamera = Camera.open();
 		mPreview = new CameraPreview(this, mCamera);
 		mLayout.addView(mPreview);
-		mCamera.setPreviewCallback( new PreviewCallback(){
-			@Override
-			public void onPreviewFrame(byte[] data, Camera camera) {
-				mPreviewCount++;
-				Log.d("Callback", mPreviewCount + " Preview Callbacks");
-			}
-		});
 	}
 
 	@Override
@@ -104,70 +82,15 @@ public class MainActivity extends Activity implements Runnable {
 			mCamera = null;
 		}
 	}
-
-	@Override
-	public void run() {
-
-		try {
-			mServer = new ServerSocket(PORT);
-
-			while (true) {
-				mSocket = mServer.accept();
-				Log.d("SS", "Connection accepted, I think...");
-				mReader = new BufferedReader(new InputStreamReader(
-						mSocket.getInputStream()));
-				mWriter = new BufferedWriter(new OutputStreamWriter(
-						mSocket.getOutputStream()));
-				Log.d("SS", "Streams established, I think...");
-
-				while (true) {
-					mMessage = mReader.readLine();
-					Log.d("SS", "Message received: " + mMessage);
-					if (mMessage.contentEquals(EXIT_STRING)) {
-						Log.d("SS", "EXIT_STRING received. Exiting...");
-						break;
-					}
-
-					mHandler.post(new Runnable() {
-						public void run() {
-							mEchoText.setText(mMessage);
-						}
-					});
-					Log.d("SS", "TextView Set to message.");
-
-					mWriter.write(mMessage);
-					Log.d("SS", "Message written to output stream.");
-					mWriter.flush();
-					Log.d("SS", "Output stream flushed.");
-				}
-				mSocket.close();
-				mReader.close();
-				mWriter.close();
-
+	
+	public void writeToEchoText(String str){
+		mString = str;
+		mHandler.post(new Runnable() {
+			public void run() {
+				mEchoText.setText(mString);
 			}
-		} catch (IOException e) {
-			try {
-				if (mWriter != null) {
-					mWriter.close();
-				}
-
-				if (mReader != null) {
-					mReader.close();
-				}
-
-				if (mSocket != null) {
-					mSocket.close();
-				}
-
-				if (mServer != null) {
-					mServer.close();
-				}
-			} catch (IOException ex) {
-				Log.e(ex.getClass().getName(), ex.getMessage());
-			}
-
-			Log.e(e.getClass().getName(), e.getMessage());
-		}
-
+		});
 	}
+
+	
 }
