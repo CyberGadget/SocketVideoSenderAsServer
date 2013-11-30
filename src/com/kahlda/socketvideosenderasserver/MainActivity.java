@@ -22,8 +22,6 @@ public class MainActivity extends Activity {
 	
 	private SocketManager mSockMan;
 
-	
-
 	volatile Thread runner;
 	Handler mHandler = new Handler();
 
@@ -66,7 +64,7 @@ public class MainActivity extends Activity {
 
 		// ƒJƒƒ‰‚ğŠJ‚­
 		mCamera = Camera.open();
-		mPreview = new CameraPreview(this, mCamera);
+		mPreview = new CameraPreview(this, mCamera, mSockMan);
 		mLayout.addView(mPreview);
 	}
 
@@ -83,6 +81,7 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	// This is most likely called from a different thread, so use the Handler.
 	public void writeToEchoText(String str){
 		mString = str;
 		mHandler.post(new Runnable() {
