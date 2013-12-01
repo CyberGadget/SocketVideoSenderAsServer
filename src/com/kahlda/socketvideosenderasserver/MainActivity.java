@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
 	
 	private SocketManager mSockMan;
 
-	volatile Thread runner;
+	volatile Thread mRunner;
 	Handler mHandler = new Handler();
 
 	@Override
@@ -44,9 +44,9 @@ public class MainActivity extends Activity {
 		
 		mSockMan = new SocketManager(this);
 
-		if (runner == null) {
-			runner = new Thread(mSockMan);
-			runner.start();
+		if (mRunner == null) {
+			mRunner = new Thread(mSockMan);
+			mRunner.start();
 		}
 		Toast.makeText(this, "Thread Start", Toast.LENGTH_SHORT).show();
 	}

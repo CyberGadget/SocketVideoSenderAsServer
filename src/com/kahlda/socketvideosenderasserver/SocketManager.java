@@ -57,7 +57,7 @@ public class SocketManager implements Runnable {
 					
 					YuvImage img = new YuvImage(params[0], ImageFormat.NV21, mPreviewWidth, mPreviewHeight, null);
 					img.compressToJpeg(new Rect(0,0,mPreviewWidth,mPreviewHeight), 20, mSocket.getOutputStream());
-					
+					mSocket.getOutputStream().flush();
 					mWriter.write("<<<END>>>");
 					mWriter.flush();
 				} catch (IOException e) {
@@ -95,6 +95,10 @@ public class SocketManager implements Runnable {
 				while (true) {
 					mMessage = mReader.readLine(); // blocking
 					//Log.d(TAG, "Message received: " + mMessage);
+					if (mMessage == null){
+						mMainActivity.writeToEchoText("Connection closed. Exiting.");
+						break;
+					}
 					if (mMessage.contentEquals(EXIT_STRING)) {
 						//Log.d(TAG, "EXIT_STRING received. Exiting...");
 						mMainActivity.writeToEchoText("EXIT_STRING received. Connection closing.");
