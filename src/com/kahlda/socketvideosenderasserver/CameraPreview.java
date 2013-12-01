@@ -1,12 +1,8 @@
 package com.kahlda.socketvideosenderasserver;
 
 import java.io.IOException;
-import java.util.List;
-
-import com.kahlda.socketvideosenderasserver.SocketManager.SendFrameTask;
 
 import android.content.Context;
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
@@ -24,7 +20,7 @@ public class CameraPreview extends SurfaceView implements
 	private SocketManager mSockMan;
 	private Camera.Size mPreviewSize;
 	private int mFrameCount;
-
+	
 	@SuppressWarnings("deprecation")
 	public CameraPreview(Context context, Camera camera, SocketManager sockMan) {
 		super(context);

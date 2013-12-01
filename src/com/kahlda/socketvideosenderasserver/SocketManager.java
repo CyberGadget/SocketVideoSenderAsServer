@@ -109,7 +109,7 @@ public class SocketManager implements Runnable {
 
 					//Log.d(TAG, "TextView Set to message.");
 
-					mWriter.write("<<<ECHO>>>" + mMessage);
+					mWriter.write("<<<ECHO>>>" + mMessage + "<<<STFU>>>");
 					//Log.d(TAG, "Message written to output stream.");
 					mWriter.flush();
 					//Log.d(TAG, "Output stream flushed.");
